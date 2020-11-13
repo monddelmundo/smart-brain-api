@@ -1,7 +1,11 @@
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
 
 const redisClientGet = require("./redis").redisClientGet;
 const redisClientSet = require("./redis").redisClientSet;
+
+const privateKey = fs.readFileSync("./private.key", "utf-8");
+const publicKey = fs.readFileSync("./public.key", "utf-8");
 
 const handleSignin = (db, bcrypt, req, res) => {
   const { email, password } = req.body;
@@ -28,12 +32,33 @@ const handleSignin = (db, bcrypt, req, res) => {
     .catch((err) => Promise.reject("wrong credentials"));
 };
 
+const verifyToken = (req) => {
+  const { authorization } = req.headers;
+
+  return jwt.verify(
+    authorization,
+    publicKey,
+    {
+      maxAge: "24h",
+      algorithms: "RS256",
+    },
+    async function (err, decoded) {
+      if (err) {
+        return { success: false };
+      } else {
+        return { success: true };
+      }
+    }
+  );
+};
+
 const getAuthTokenId = (req) => {
   const { authorization } = req.headers;
 
   return redisClientGet(authorization)
     .then((id) => {
-      return { id };
+      if (id) return id;
+      else return Promise.reject("No Reply");
     })
     .catch((err) => console.log("No Reply"));
 };
@@ -56,14 +81,30 @@ const setToken = (token, id) => {
 const signToken = (email) => {
   const jwtPayload = { email };
 
-  return jwt.sign(jwtPayload, process.env.JWTSECRET, { expiresIn: "2 days" });
+  return jwt.sign(jwtPayload, privateKey, {
+    expiresIn: "12h",
+    algorithm: "RS256",
+  });
+  //return jwt.sign(jwtPayload, process.env.JWTSECRET, { expiresIn: "2 days" });
 };
 
 const signinAuthentication = (db, bcrypt) => (req, res) => {
   const { authorization } = req.headers;
   return authorization
     ? getAuthTokenId(req)
-        .then((id) => res.json(id))
+        .then((id) => {
+          return verifyToken(req)
+            .then(({ success }) => {
+              if (success) {
+                return res.json({ id });
+              } else {
+                return res.status(400).json("Unauthorized");
+              }
+            })
+            .catch((error) => {
+              return res.status(400).json("Unauthorized");
+            });
+        })
         .catch((err) => res.status(400).json("Unauthorized"))
     : handleSignin(db, bcrypt, req, res)
         .then((data) => {
@@ -77,4 +118,5 @@ const signinAuthentication = (db, bcrypt) => (req, res) => {
 
 module.exports = {
   signinAuthentication,
+  verifyToken,
 };
