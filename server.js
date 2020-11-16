@@ -50,7 +50,12 @@ app.use(
 app.use(bodyParser.json());
 app.get("/", (req, res) => {
   //res.send("Working");
-  res.send(db.select().table("login"));
+  res.send(
+    db
+      .select()
+      .table("login")
+      .then((data) => console.log(data))
+  );
 });
 app.post("/signin", signin.signinAuthentication(db, bcrypt));
 app.post("/register", (req, res) => {
