@@ -1,5 +1,5 @@
 /node_modules 
-private.key
-public.key
+# private.key
+# public.key
 
 .env
