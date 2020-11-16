@@ -55,6 +55,7 @@ app.get("/", (req, res) => {
       .select()
       .table("login")
       .then((data) => console.log(data))
+      .catch((err) => console.log(err))
   );
 });
 app.post("/signin", signin.signinAuthentication(db, bcrypt));
