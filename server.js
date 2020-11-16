@@ -49,8 +49,8 @@ app.use(
 
 app.use(bodyParser.json());
 app.get("/", (req, res) => {
-  res.send("Working");
-  // res.send(db.users);
+  //res.send("Working");
+  res.send(db.users);
 });
 app.post("/signin", signin.signinAuthentication(db, bcrypt));
 app.post("/register", (req, res) => {
