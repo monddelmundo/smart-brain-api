@@ -24,7 +24,27 @@ const app = express();
 require("dotenv").config();
 
 app.use(morgan("combined"));
-app.use(cors());
+
+const allowedDomains = [
+  "https://smartbrain.devcoral.com/",
+  "http://smartbrain.devcoral.com/",
+];
+app.use(
+  cors({
+    credentials: true,
+    origin: function (origin, callback) {
+      // bypass the requests with no origin (like curl requests, mobile apps, etc )
+      if (!origin) return callback(null, true);
+
+      if (allowedDomains.indexOf(origin) === -1) {
+        const msg = `This site ${origin} does not have an access. Only specific domains are allowed to access it.`;
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+  })
+);
+
 app.use(bodyParser.json());
 app.get("/", (req, res) => {
   //res.send("Working");
