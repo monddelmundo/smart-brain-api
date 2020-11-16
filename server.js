@@ -16,11 +16,7 @@ const signout = require("./controllers/signout").signout;
 const db = knex({
   // connect to your own database here
   client: "pg",
-  //connection: process.env.POSTGRES_URI,
-  connection:
-    process.env.ENV === "production"
-      ? process.env.DATABASE_URL
-      : process.env.POSTGRES_URI,
+  connection: process.env.POSTGRES_URI,
 });
 
 const app = express();
