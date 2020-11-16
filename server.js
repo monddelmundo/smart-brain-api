@@ -26,10 +26,10 @@ require("dotenv").config();
 app.use(morgan("combined"));
 
 const allowedDomains = [
-  "https://smartbrain.devcoral.com/",
-  "http://smartbrain.devcoral.com/",
-  "http://localhost:3001/",
-  "https://localhost:3001/",
+  "https://smartbrain.devcoral.com",
+  "http://smartbrain.devcoral.com",
+  "http://localhost:3001",
+  "https://localhost:3001",
 ];
 app.use(
   cors({
